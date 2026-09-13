@@ -188,6 +188,21 @@ input[readonly]{
         <input type="email" id="employeeEmail" placeholder="you@mpws.com.ph" autocomplete="off">
     </div>
 
+    <div class="field">
+        <label>Sites to be Visited (up to 5)</label>
+        <input type="text" id="site1" list="siteDatalist" placeholder="Site 1 (required)" autocomplete="off" style="margin-bottom:8px;">
+        <input type="text" id="site2" list="siteDatalist" placeholder="Site 2 (optional)" autocomplete="off" style="margin-bottom:8px;">
+        <input type="text" id="site3" list="siteDatalist" placeholder="Site 3 (optional)" autocomplete="off" style="margin-bottom:8px;">
+        <input type="text" id="site4" list="siteDatalist" placeholder="Site 4 (optional)" autocomplete="off" style="margin-bottom:8px;">
+        <input type="text" id="site5" list="siteDatalist" placeholder="Site 5 (optional)" autocomplete="off">
+        <datalist id="siteDatalist"></datalist>
+    </div>
+
+    <div class="field">
+        <label>Reason for OBT</label>
+        <textarea id="reason" rows="3" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;font-family:inherit;"></textarea>
+    </div>
+
     <div class="submit-row">
         <button type="button" id="submitBtn" class="submit-btn" onclick="submitRequest()">
             Request Approval
@@ -205,11 +220,12 @@ input[readonly]{
    URL here after Deploy > New deployment > Web app on Code.gs
    bound to: https://docs.google.com/spreadsheets/d/1QkOt6uLit7Ytu2ljrKuV-XakPuYzDzb-zJGWFBgIXnk/edit
 */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPyfgOy6N28MFhnfiUUB5KGvQwBY5bwCUAsa3U33cg5ulsKt2ASKJQu1p45IBRc_oe/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwnqK7E6-Vn4W32_gqxYAPdAZQWfggKZAmnaLbXtzE_gH-mO-rLinzardVLg71HBaCI/exec";
 
 let dailyEmployees = [];
 let semiEmployees = [];
 let departmentList = [];
+let siteList = [];
 
 function loadEmployeeData(){
     const typeDdl = document.getElementById("employeeType");
@@ -227,7 +243,11 @@ function loadEmployeeData(){
             dailyEmployees = data.daily || [];
             semiEmployees = data.semi || [];
             departmentList = data.departments || [];
+            siteList = (data.sites && data.sites.length > 0)
+                ? data.sites
+                : (data.sap || []).map(row => row.name);
             populateDepartments();
+            populateSites();
             typeDdl.disabled = false;
         })
         .catch(function(err){
@@ -245,6 +265,16 @@ function populateDepartments(){
         option.value = dept;
         option.textContent = dept;
         select.appendChild(option);
+    });
+}
+
+function populateSites(){
+    const datalist = document.getElementById("siteDatalist");
+    datalist.innerHTML = "";
+    siteList.forEach(siteName => {
+        const option = document.createElement("option");
+        option.value = siteName;
+        datalist.appendChild(option);
     });
 }
 
@@ -291,6 +321,13 @@ function onEmployeeNameInput(){
         );
         deptSelect.value = match || "";
 
+        // Auto-fill email from the roster if available — still editable,
+        // in case it's missing or wrong on file.
+        const emailInput = document.getElementById("employeeEmail");
+        if(employee.email){
+            emailInput.value = employee.email;
+        }
+
     } else {
         document.getElementById("employeeNumber").value = "";
         document.getElementById("department").value = "";
@@ -303,6 +340,14 @@ function submitRequest(){
     const name = document.getElementById("name").value.split(" (")[0];
     const department = document.getElementById("department").value;
     const employeeEmail = document.getElementById("employeeEmail").value.trim();
+    const sites = [
+        document.getElementById("site1").value.trim(),
+        document.getElementById("site2").value.trim(),
+        document.getElementById("site3").value.trim(),
+        document.getElementById("site4").value.trim(),
+        document.getElementById("site5").value.trim()
+    ].filter(s => s.length > 0);
+    const reason = document.getElementById("reason").value.trim();
     const statusEl = document.getElementById("statusMsg");
     const submitBtn = document.getElementById("submitBtn");
 
@@ -326,6 +371,16 @@ function submitRequest(){
         statusEl.className = "status-msg error";
         return;
     }
+    if(sites.length === 0){
+        statusEl.textContent = "Please specify at least one site to be visited.";
+        statusEl.className = "status-msg error";
+        return;
+    }
+    if(!reason){
+        statusEl.textContent = "Please provide a reason for the OBT request.";
+        statusEl.className = "status-msg error";
+        return;
+    }
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Sending...";
@@ -335,7 +390,7 @@ function submitRequest(){
     fetch(WEB_APP_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ formType: "request", employeeType, empNo, name, department, employeeEmail })
+        body: JSON.stringify({ formType: "request", employeeType, empNo, name, department, employeeEmail, sites, reason })
     })
     .then(function(response){ return response.json(); })
     .then(function(res){
