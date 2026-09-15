@@ -148,7 +148,7 @@ input[readonly]{
             class="logo">
 
         <h1>Timesheet Request</h1>
-        <p class="sub">Metro Pacific Water Solutions — request approval before submitting your OBT entry</p>
+        <p class="sub">Metro Pacific Water Solutions — request approval before submitting your Attendance entry</p>
 
         <div id="liveClock" class="live-clock"></div>
 
@@ -396,7 +396,7 @@ function submitRequest(){
     .then(function(res){
         if(res.success){
             if(res.emailSent){
-                statusEl.textContent = "Request sent to " + res.manager + ". You'll get an email with the OBT Tracker link once approved.";
+                statusEl.textContent = "Request sent to " + res.manager + ". You'll get an email with the Attendance Tracker link once approved.";
                 statusEl.className = "status-msg success";
             } else {
                 statusEl.innerHTML =
