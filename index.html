@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MPWS Attendance Tracker</title>
+<title>MPWS Timesheet Request</title>
 
 <style>
 
@@ -148,7 +148,7 @@ input[readonly]{
             class="logo">
 
         <h1>Timesheet Request</h1>
-        <p class="sub">Metro Pacific Water Solutions — request approval before submitting your Attendance entry</p>
+        <p class="sub">Metro Pacific Water Solutions — request approval before submitting your OBT entry</p>
 
         <div id="liveClock" class="live-clock"></div>
 
@@ -244,7 +244,7 @@ function loadEmployeeData(){
             semiEmployees = data.semi || [];
             departmentList = data.departments || [];
             siteList = (data.sites && data.sites.length > 0)
-                ? data.sites
+                ? data.sites.map(s => (typeof s === 'string') ? s : s.name)
                 : (data.sap || []).map(row => row.name);
             populateDepartments();
             populateSites();
@@ -396,7 +396,7 @@ function submitRequest(){
     .then(function(res){
         if(res.success){
             if(res.emailSent){
-                statusEl.textContent = "Request sent to " + res.manager + ". You'll get an email with the Attendance Tracker link once approved.";
+                statusEl.textContent = "Request sent to " + res.manager + ". You'll get an email with the OBT Tracker link once approved.";
                 statusEl.className = "status-msg success";
             } else {
                 statusEl.innerHTML =
