@@ -155,6 +155,17 @@ input[readonly]{
     </div>
 
     <div class="field">
+        <label>Request Type</label>
+        <select id="requestType" onchange="onRequestTypeChange()">
+            <option value="">Select Type</option>
+            <option value="ATTENDANCE">ATTENDANCE</option>
+            <option value="OBT">OBT</option>
+        </select>
+    </div>
+
+    <div id="obtFields" style="display:none;">
+
+    <div class="field">
         <label>Employee Type</label>
         <select id="employeeType" onchange="onEmployeeTypeChange()">
             <option value="">Select Type</option>
@@ -210,6 +221,8 @@ input[readonly]{
         <div id="statusMsg" class="status-msg"></div>
     </div>
 
+    </div><!-- /obtFields -->
+
     <a class="footer-link" href="https://jblebrilla.github.io/obt_tracker.html">Already approved? Submit your OBT entry &rarr;</a>
 
 </div>
@@ -221,6 +234,28 @@ input[readonly]{
    bound to: https://docs.google.com/spreadsheets/d/1QkOt6uLit7Ytu2ljrKuV-XakPuYzDzb-zJGWFBgIXnk/edit
 */
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwnqK7E6-Vn4W32_gqxYAPdAZQWfggKZAmnaLbXtzE_gH-mO-rLinzardVLg71HBaCI/exec";
+const TRACKER_URL = "https://jblebrilla.github.io/obt_tracker.html";
+
+// ATTENDANCE never needs approval, so there's nothing to fill in here —
+// send them straight to the Tracker. OBT does need approval, so reveal
+// the rest of this form and require it to be completed and submitted.
+function onRequestTypeChange(){
+    const type = document.getElementById("requestType").value;
+    const obtFields = document.getElementById("obtFields");
+
+    if(type === "ATTENDANCE"){
+        document.getElementById("statusMsg").textContent = "Redirecting to the Attendance Tracker...";
+        document.getElementById("statusMsg").className = "status-msg success";
+        window.location.href = TRACKER_URL;
+        return;
+    }
+
+    if(type === "OBT"){
+        obtFields.style.display = "block";
+    } else {
+        obtFields.style.display = "none";
+    }
+}
 
 let dailyEmployees = [];
 let semiEmployees = [];
