@@ -243,9 +243,7 @@ function loadEmployeeData(){
             dailyEmployees = data.daily || [];
             semiEmployees = data.semi || [];
             departmentList = data.departments || [];
-            siteList = (data.sites && data.sites.length > 0)
-                ? data.sites.map(s => (typeof s === 'string') ? s : s.name)
-                : (data.sap || []).map(row => row.name);
+            siteList = (data.sites || []).map(s => (typeof s === 'string') ? s : s.name);
             populateDepartments();
             populateSites();
             typeDdl.disabled = false;
